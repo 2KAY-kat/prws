@@ -7,3 +7,4 @@ Route::get('/audits/{audit}', [AuditController::class, 'show'])->name('audits.sh
 Route::get('/audits', [AuditController::class, 'index'])->name('audits.index');
 
 Route::post('/audits', [AuditController::class, 'store'])->name('audits.store');
+Route::post('/audits/{audit}/rescan', [AuditController::class, 'rescan'])->name('audits.rescan');

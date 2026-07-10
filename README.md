@@ -80,11 +80,13 @@ Since rule coverage expansion is deferred in favor of polish, suggested next ste
 
 1. ~~Scan history~~ - ✅ done (`/audits` index route, paginated, links to `create` and back from each row)
 2. ~~Error handling in the UI~~ - ✅ done (unreachable/invalid URLs now return a friendly form error instead of a fake 0/100 report)
-3. **Re-scan button** on the report page
-4. **Shareable report links** - the `show` route already supports this by ID; just needs surfacing (copy-link button)
+3. ~~Re-scan button~~ - ✅ done (`POST /audits/{audit}/rescan`, creates a new audit record rather than overwriting, preserves history)
+4. ~~Shareable report links~~ - ✅ done (Copy Link button on report page, clipboard write; `show` route was already ID-addressable)
 5. **Loading/progress state** - scans currently block the request; even without full queueing, a simple "Scanning..." state improves perceived UX
-6. **Platinum certification logic** - wire in the "no High findings" condition currently missing from `AuditController::store()`
+6. **Platinum certification logic** - wire in the "no High findings" condition currently missing from `AuditController::store()` / `rescan()`
 7. **Visual polish on the report** - score ring/gauge instead of plain text, category subtotals, maybe a printable/exportable version
+
+**Tracked tech debt:** scoring/certification logic (`scoreAndCertify`) is currently duplicated between `store()` and `rescan()` in `AuditController`. Should be extracted into a shared private helper - deferred for now since it's not blocking, but worth doing before a third copy appears.
 
 ---
 

@@ -75,5 +75,48 @@ class AuditController extends Controller
 
         return view('audits.index', ['audits' => $audits]);
     }
+
+    public function rescan(Audit $audit)
+{
+    $engine = new RuleEngine($audit->url);
+    $results = $engine->run();
+
+    if (!$engine->isReachable()) {
+        return back()->withErrors(['url' => $engine->getFetchErrorMessage() ?? 'Could not reach this site.']);
+    }
+
+    $totalAvailable = array_sum(array_column($results, 'points'));
+    $totalEarned = array_sum(array_column($results, 'points_earned'));
+    $score = $totalAvailable > 0 ? round(($totalEarned / $totalAvailable) * 100) : 0;
+
+    $hasCritical = collect($results)->contains(fn ($r) => !$r['passed'] && $r['severity'] === 'Critical');
+    $certification = match (true) {
+        $score >= 90 && !$hasCritical => 'Gold',
+        $score >= 75 && !$hasCritical => 'Silver',
+        $score >= 60 && !$hasCritical => 'Bronze',
+        default => 'None',
+    };
+
+    $newAudit = Audit::create([
+        'url' => $audit->url,
+        'score' => $score,
+        'certification' => $certification,
+    ]);
+
+    foreach ($results as $r) {
+        Finding::create([
+            'audit_id' => $newAudit->id,
+            'rule_id' => $r['rule_id'],
+            'name' => $r['name'],
+            'category' => $r['category'],
+            'severity' => $r['severity'],
+            'points_available' => $r['points'],
+            'points_earned' => $r['points_earned'],
+            'passed' => $r['passed'],
+        ]);
+    }
+
+    return redirect()->route('audits.show', $newAudit);
+}
 }
 
