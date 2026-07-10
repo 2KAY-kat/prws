@@ -32,7 +32,10 @@ class AuditController extends Controller
         $score = $totalAvailable > 0 ? round(($totalEarned / $totalAvailable) * 100) : 0;
 
         $hasCritical = collect($results)->contains(fn ($r) => !$r['passed'] && $r['severity'] === 'Critical');
+        $hasHigh = collect($results)->contains(fn ($r) => !$r['passed'] && $r['severity'] === 'High');
+
         $certification = match (true) {
+            $score >= 95 && !$hasCritical && !$hasHigh => 'Platinum',
             $score >= 90 && !$hasCritical => 'Gold',
             $score >= 75 && !$hasCritical => 'Silver',
             $score >= 60 && !$hasCritical => 'Bronze',

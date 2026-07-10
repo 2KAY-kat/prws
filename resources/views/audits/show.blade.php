@@ -58,12 +58,13 @@
                     default => '#dc2626',      // red / none
                 };
 
-                $badgeColors = [
-                    'Gold' => 'bg-yellow-100 text-yellow-800',
-                    'Silver' => 'bg-gray-200 text-gray-700',
-                    'Bronze' => 'bg-orange-100 text-orange-800',
-                    'None' => 'bg-red-100 text-red-700',
-                ];
+                $gaugeColor = match (true) {
+                    $score >= 95 => '#0ea5e9', // platinum - blue-ish silver tone
+                    $score >= 90 => '#eab308', // gold
+                    $score >= 75 => '#6b7280', // silver
+                    $score >= 60 => '#ea580c', // bronze
+                    default => '#dc2626',      // red / none
+                };
             @endphp
 
             <div class="relative w-32 h-32 shrink-0">
