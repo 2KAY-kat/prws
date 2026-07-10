@@ -30,18 +30,9 @@
                             <p class="text-xs text-gray-400">{{ $audit->created_at->diffForHumans() }}</p>
                         </div>
 
-                        @php
-                        $badgeColors = [
-                            'Platinum' => 'bg-slate-100 text-slate-700 ring-1 ring-slate-300',
-                            'Gold' => 'bg-yellow-100 text-yellow-800',
-                            'Silver' => 'bg-gray-200 text-gray-700',
-                            'Bronze' => 'bg-orange-100 text-orange-800',
-                            'None' => 'bg-red-100 text-red-700',
-                        ];
-                        @endphp
                         <div class="flex items-center gap-3 shrink-0 ml-4">
                             <span class="text-sm font-semibold text-gray-700">{{ $audit->score }}/100</span>
-                            <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $badgeColors[$audit->certification] ?? 'bg-gray-100 text-gray-600' }}">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold {{ \App\Support\Certification::badgeClasses($audit->certification) }}">
                                 {{ $audit->certification }}
                             </span>
                         </div>

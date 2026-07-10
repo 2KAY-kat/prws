@@ -21,8 +21,8 @@ The current build validates the end-to-end loop - submit a URL, run checks, scor
 - Rule definitions in `config/prws_rules.php` (flat config, not yet DB-backed)
 
 **Frontend**
-- `audits/create.blade.php` - URL submission form, links to scan history
-- `audits/show.blade.php` - scored report, grouped by category, pass/fail icons, points per rule
+- `audits/create.blade.php` - URL submission form, links to scan history, animated loading state on submit (readonly input + spinner button - full-page POST, no true progress tracking yet)
+- `audits/show.blade.php` - scored report with SVG score gauge (color-coded by tier), icon-based pass/fail indicators, category icons, grouped by category with points per rule
 - `audits/index.blade.php` - paginated scan history, links back to each report
 
 **Error handling**
@@ -30,7 +30,7 @@ The current build validates the end-to-end loop - submit a URL, run checks, scor
 
 **Scoring**
 - Category score = earned / available × 100
-- Certification: Bronze ≥60, Silver ≥75, Gold ≥90 (all require no Critical failures), Platinum ≥95 with no Critical *or* High failures - MVP currently implements Bronze/Silver/Gold; Platinum's "no High findings" condition not yet wired in
+- Certification: Bronze ≥60, Silver ≥75, Gold ≥90 (all require no Critical failures), Platinum ≥95 with no Critical *and* no High failures - all four tiers now implemented
 
 ### Rules implemented (13 of 34 in spec)
 
@@ -82,11 +82,22 @@ Since rule coverage expansion is deferred in favor of polish, suggested next ste
 2. ~~Error handling in the UI~~ - ✅ done (unreachable/invalid URLs now return a friendly form error instead of a fake 0/100 report)
 3. ~~Re-scan button~~ - ✅ done (`POST /audits/{audit}/rescan`, creates a new audit record rather than overwriting, preserves history)
 4. ~~Shareable report links~~ - ✅ done (Copy Link button on report page, clipboard write; `show` route was already ID-addressable)
-5. **Loading/progress state** - scans currently block the request; even without full queueing, a simple "Scanning..." state improves perceived UX
-6. **Platinum certification logic** - wire in the "no High findings" condition currently missing from `AuditController::store()` / `rescan()`
-7. **Visual polish on the report** - score ring/gauge instead of plain text, category subtotals, maybe a printable/exportable version
+5. ~~Loading/progress state~~ - ✅ done (spinner + disabled button + readonly input on submit; note - input must use `readOnly`, not `disabled`, or its value won't POST)
+6. ~~Platinum certification logic~~ - ✅ done (score ≥95, no Critical, no High - added as top arm in the `match(true)` block in both `store()` and `rescan()`)
+7. ~~Visual polish on the report~~ - ✅ done (SVG score gauge color-coded by tier, icon-based pass/fail instead of ✓/✕ text, category icons, icon+label nav links)
 
-**Tracked tech debt:** scoring/certification logic (`scoreAndCertify`) is currently duplicated between `store()` and `rescan()` in `AuditController`. Should be extracted into a shared private helper - deferred for now since it's not blocking, but worth doing before a third copy appears.
+**Tracked tech debt:** scoring/certification logic (`scoreAndCertify`) is currently duplicated between `store()` and `rescan()` in `AuditController`. Should be extracted into a shared private helper - deferred for now since it's not blocking, but worth doing before a third copy appears. Now also duplicated: `$badgeColors` array (in `show.blade.php` and `index.blade.php`) and gauge/tier color logic - worth consolidating into a shared helper (e.g. a `Certification` enum or a view composer) once UI stabilizes.
+
+---
+
+## Next improvements (up next)
+
+1. **Extract scoring/certification + badge-color duplication** - the tech debt above; do this before adding more logic that touches certification tiers
+2. **DB-backed rules table** - move `config/prws_rules.php` into a `rules` migration/model per spec section 16, so rules can be toggled/edited without a redeploy
+3. **Fill in easy remaining rules** - LEG-003 (Cookie Policy) and CON-003 (About page) follow the exact same path-check pattern as existing rules; SEC-001 (HTTPS), SEC-002 (HSTS), SEC-004/005/006 (security headers) are just reading response headers already available from the Guzzle response - low effort, meaningfully raises real-world scores toward Platinum range
+4. **Printable/exportable report** - PDF export or print-friendly CSS for the report page, useful if this is ever shared with a client or team as a deliverable
+5. **Category subtotals on the report** - show earned/available points per category (e.g. "Legal: 100/100") above each group, not just per-rule
+6. **True async scanning** - move the scan to a queued job with polling or websockets for real progress, replacing the current full-page-POST spinner; only worth doing once REL-002 (broken link crawling) or other slow multi-page checks are added, since single-page checks are fast enough to stay synchronous for now
 
 ---
 
@@ -96,7 +107,7 @@ Since rule coverage expansion is deferred in favor of polish, suggested next ste
 composer install
 cp .env.example .env
 php artisan key:generate
-touch database/database.sqlite   # if using SQLite / if not you know what to do then ...
+touch database/database.sqlite    if using SQLite / if not you know what to do then ...
 php artisan migrate
 php artisan serve
 ```

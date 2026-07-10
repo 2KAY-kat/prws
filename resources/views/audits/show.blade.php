@@ -46,25 +46,14 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mt-4 mb-8 flex items-center gap-8">
 
             @php
+                use App\Support\Certification;
+
                 $score = $audit->score ?? 0;
                 $radius = 54;
                 $circumference = 2 * M_PI * $radius;
                 $offset = $circumference - ($score / 100) * $circumference;
 
-                $gaugeColor = match (true) {
-                    $score >= 90 => '#eab308', // gold
-                    $score >= 75 => '#6b7280', // silver
-                    $score >= 60 => '#ea580c', // bronze
-                    default => '#dc2626',      // red / none
-                };
-
-                $gaugeColor = match (true) {
-                    $score >= 95 => '#0ea5e9', // platinum - blue-ish silver tone
-                    $score >= 90 => '#eab308', // gold
-                    $score >= 75 => '#6b7280', // silver
-                    $score >= 60 => '#ea580c', // bronze
-                    default => '#dc2626',      // red / none
-                };
+                $gaugeColor = Certification::gaugeColor($score);
             @endphp
 
             <div class="relative w-32 h-32 shrink-0">
@@ -89,7 +78,7 @@
 
             <div class="min-w-0">
                 <p class="text-gray-500 text-sm mb-2 truncate">{{ $audit->url }}</p>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold {{ $badgeColors[$audit->certification] ?? 'bg-gray-100 text-gray-600' }}">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold {{ \App\Support\Certification::badgeClasses($audit->certification) }}">
                     @if ($audit->certification !== 'None')
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 1a6 6 0 00-3.815 10.631C7.98 12.83 9 14.552 9 16.5V17a1 1 0 001 1h0a1 1 0 001-1v-.5c0-1.948 1.02-3.67 2.815-4.869A6 6 0 0010 1zM8.5 18a.5.5 0 000 1h3a.5.5 0 000-1h-3z" clip-rule="evenodd" />
