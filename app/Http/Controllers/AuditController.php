@@ -68,4 +68,12 @@ class AuditController extends Controller
             'findings' => $audit->findings,
         ]);
     }
+
+    public function index()
+    {
+        $audits = Audit::latest()->paginate(15);
+
+        return view('audits.index', ['audits' => $audits]);
+    }
 }
+

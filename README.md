@@ -21,8 +21,12 @@ The current build validates the end-to-end loop - submit a URL, run checks, scor
 - Rule definitions in `config/prws_rules.php` (flat config, not yet DB-backed)
 
 **Frontend**
-- `audits/create.blade.php` - URL submission form
+- `audits/create.blade.php` - URL submission form, links to scan history
 - `audits/show.blade.php` - scored report, grouped by category, pass/fail icons, points per rule
+- `audits/index.blade.php` - paginated scan history, links back to each report
+
+**Error handling**
+- Unreachable/invalid URLs (DNS failure, connection refused, timeout, non-2xx response) are caught in `RuleEngine` and surfaced as a friendly form error instead of producing a misleading 0/100 report
 
 **Scoring**
 - Category score = earned / available × 100
@@ -74,11 +78,11 @@ The current build validates the end-to-end loop - submit a URL, run checks, scor
 
 Since rule coverage expansion is deferred in favor of polish, suggested next steps in rough priority order:
 
-1. **Scan history** - list past audits (`/audits` index route), so results aren't lost after a session
-2. **Re-scan button** on the report page
-3. **Shareable report links** - the `show` route already supports this by ID; just needs surfacing (copy-link button)
-4. **Loading/progress state** - scans currently block the request; even without full queueing, a simple "Scanning..." state improves perceived UX
-5. **Error handling in the UI** - right now a totally unreachable site (DNS failure, connection refused) will just show an all-0 report with no explanation. Surface a clear "couldn't reach this site" message instead of a misleadingly low score
+1. ~~Scan history~~ - ✅ done (`/audits` index route, paginated, links to `create` and back from each row)
+2. ~~Error handling in the UI~~ - ✅ done (unreachable/invalid URLs now return a friendly form error instead of a fake 0/100 report)
+3. **Re-scan button** on the report page
+4. **Shareable report links** - the `show` route already supports this by ID; just needs surfacing (copy-link button)
+5. **Loading/progress state** - scans currently block the request; even without full queueing, a simple "Scanning..." state improves perceived UX
 6. **Platinum certification logic** - wire in the "no High findings" condition currently missing from `AuditController::store()`
 7. **Visual polish on the report** - score ring/gauge instead of plain text, category subtotals, maybe a printable/exportable version
 

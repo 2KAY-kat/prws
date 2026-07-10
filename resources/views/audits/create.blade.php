@@ -7,7 +7,10 @@
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center">
     <div class="max-w-lg w-full mx-auto p-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">PRWS</h1>
+    <div class="flex items-center justify-between mb-2">
+        <h1 class="text-3xl font-bold text-gray-900">PRWS</h1>
+            <a href="{{ route('audits.index') }}" class="text-sm text-indigo-600 hover:underline">History</a>
+    </div>
         <p class="text-gray-500 mb-8">Production Readiness Website Scanner helps you check the basics before you ship.</p>
 
         @if ($errors->any())
