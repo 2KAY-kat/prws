@@ -12,7 +12,19 @@ class AuditController extends Controller
 {
     public function create()
     {
-        return view('audits.create');
+        $showcaseAudits = Audit::with('findings')
+            ->where('score', '>=', 60)
+            ->orderByDesc('score')
+            ->latest()
+            ->take(6)
+            ->get();
+
+        $totalScans = Audit::count();
+
+        return view('audits.create', [
+            'showcaseAudits' => $showcaseAudits,
+            'totalScans' => $totalScans,
+        ]);
     }
 
     public function store(Request $request)
