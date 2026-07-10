@@ -13,6 +13,9 @@ class RuleEngine
     protected ?string $homepageHtml = null;
     protected ?Crawler $crawler = null;
 
+    protected bool $reachable = true;
+    protected ?string $fetchErrorMessage = null;
+
     public function __construct(string $url)
     {
         $this->baseUrl = rtrim($url, '/');
@@ -24,34 +27,70 @@ class RuleEngine
     }
 
     public function run(): array
-    {
-        $this->fetchHomepage();
+{
+    $this->fetchHomepage();
 
-        $results = [];
-        foreach (config('prws_rules') as $rule) {
-            $method = 'check' . str_replace('-', '', $rule['rule_id']);
-            $passed = method_exists($this, $method) ? $this->$method() : false;
-
-            $results[] = array_merge($rule, [
-                'passed' => $passed,
-                'points_earned' => $passed ? $rule['points'] : 0,
-            ]);
-        }
-
-        return $results;
+    if (!$this->reachable) {
+        return [];
     }
 
-    protected function fetchHomepage(): void
-    {
-        try {
-            $response = $this->client->get($this->baseUrl);
-            $this->homepageHtml = (string) $response->getBody();
-            $this->crawler = new Crawler($this->homepageHtml);
-        } catch (GuzzleException $e) {
-            \Log::error('PRWS fetch failed: ' . $e->getMessage());
+    $results = [];
+    foreach (config('prws_rules') as $rule) {
+        $method = 'check' . str_replace('-', '', $rule['rule_id']);
+        $passed = method_exists($this, $method) ? $this->$method() : false;
+
+        $results[] = array_merge($rule, [
+            'passed' => $passed,
+            'points_earned' => $passed ? $rule['points'] : 0,
+        ]);
+    }
+
+    return $results;
+}
+
+  protected function fetchHomepage(): void
+{
+    try {
+        $response = $this->client->get($this->baseUrl);
+
+        if ($response->getStatusCode() >= 400) {
+            $this->reachable = false;
+            $this->fetchErrorMessage = "Site responded with HTTP {$response->getStatusCode()}.";
             $this->homepageHtml = '';
+            return;
         }
+
+        $this->homepageHtml = (string) $response->getBody();
+        $this->crawler = new Crawler($this->homepageHtml);
+    } catch (GuzzleException $e) {
+        $this->reachable = false;
+        $this->fetchErrorMessage = $this->friendlyErrorMessage($e);
+        $this->homepageHtml = '';
     }
+}
+
+    protected function friendlyErrorMessage(GuzzleException $e): string
+{
+    $message = $e->getMessage();
+
+    return match (true) {
+        str_contains($message, 'cURL error 6') => 'Could not resolve this domain. Double-check the URL.',
+        str_contains($message, 'cURL error 7') => 'Connection refused, the site may be down.',
+        str_contains($message, 'cURL error 28') => 'The site took too long to respond (timeout).',
+        str_contains($message, 'cURL error 60') => 'SSL certificate problem on the target site.',
+        default => 'Could not reach this site.',
+    };
+}
+
+    public function isReachable(): bool
+{
+    return $this->reachable;
+}
+
+    public function getFetchErrorMessage(): ?string
+{
+    return $this->fetchErrorMessage;
+}
 
     protected function pathExists(string $path): bool
     {

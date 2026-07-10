@@ -14,12 +14,18 @@ class AuditController extends Controller
         return view('audits.create');
     }
 
-    public function store(Request $request)
-    {
-        $data = $request->validate(['url' => 'required|url']);
+   public function store(Request $request)
+{
+    $data = $request->validate(['url' => 'required|url']);
 
-        $engine = new RuleEngine($data['url']);
-        $results = $engine->run();
+    $engine = new RuleEngine($data['url']);
+    $results = $engine->run();
+
+    if (!$engine->isReachable()) {
+        return back()
+            ->withInput()
+            ->withErrors(['url' => $engine->getFetchErrorMessage() ?? 'Could not reach this site.']);
+    }
 
         $totalAvailable = array_sum(array_column($results, 'points'));
         $totalEarned = array_sum(array_column($results, 'points_earned'));
