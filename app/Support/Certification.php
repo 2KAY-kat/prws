@@ -45,4 +45,15 @@ class Certification
             default => '#dc2626',      // none
         };
     }
+
+    public static function cardGradient(string $tier): string
+    {
+        return match ($tier) {
+            'Platinum' => 'bg-gradient-to-b from-slate-600 via-slate-700 to-slate-900 text-white',
+            'Gold' => 'bg-gradient-to-b from-yellow-300 via-yellow-400 to-yellow-600 text-yellow-950',
+            'Silver' => 'bg-gradient-to-b from-gray-200 via-gray-300 to-gray-400 text-gray-900',
+            'Bronze' => 'bg-gradient-to-b from-orange-300 via-orange-400 to-orange-600 text-orange-950',
+            default => 'bg-gradient-to-b from-gray-100 to-gray-200 text-gray-700',
+        };
+    }
 }

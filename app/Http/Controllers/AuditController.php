@@ -12,17 +12,21 @@ class AuditController extends Controller
 {
     public function create()
     {
-        $showcaseAudits = Audit::with('findings')
-            ->where('score', '>=', 60)
-            ->orderByDesc('score')
-            ->latest()
-            ->take(6)
-            ->get();
+        $tierOrder = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+
+        $showcaseCards = collect($tierOrder)
+            ->map(fn ($tier) => Audit::with('findings')
+                ->where('certification', $tier)
+                ->orderByDesc('score')
+                ->latest()
+                ->first())
+            ->filter()   // drop tiers with no scans yet
+            ->values();
 
         $totalScans = Audit::count();
 
         return view('audits.create', [
-            'showcaseAudits' => $showcaseAudits,
+            'showcaseCards' => $showcaseCards,
             'totalScans' => $totalScans,
         ]);
     }
