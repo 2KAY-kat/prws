@@ -237,9 +237,9 @@
                 <!-- Try Quick Links -->
                 <div class="mt-[14px] text-[13px] text-slate-500">
                     try
-                    <button type="button" onclick="document.getElementById('url-input').value = 'https://laravel.com'" class="cursor-pointer font-mono text-slate-300 underline decoration-brand/40 underline-offset-[3px] transition hover:text-brand">laravel.com</button> 
+                    <button type="button" onclick="document.getElementById('url-input').value = 'https://nsikacart.com'" class="cursor-pointer font-mono text-slate-300 underline decoration-brand/40 underline-offset-[3px] transition hover:text-brand">nsikacart.com</button> 
                     · 
-                    <button type="button" onclick="document.getElementById('url-input').value = 'https://tailwindcss.com'" class="cursor-pointer font-mono text-slate-300 underline decoration-brand/40 underline-offset-[3px] transition hover:text-brand">tailwindcss.com</button> 
+                    <button type="button" onclick="document.getElementById('url-input').value = 'https://www.w3.org'" class="cursor-pointer font-mono text-slate-300 underline decoration-brand/40 underline-offset-[3px] transition hover:text-brand">w3.org</button> 
                     · or your own
                 </div>
 
@@ -284,7 +284,7 @@
                                 $translateY = abs((int) round($offset)) * 8;
                                 $zIndex = 10 + $index;
                                 $host = parse_url($showcase->url, PHP_URL_HOST) ?? $showcase->url;
-                                $categoryLabels = ['Legal' => 'LEG', 'Contact' => 'CON', 'Reliability' => 'REL', 'SEO' => 'SEO', 'Accessibility' => 'ACC'];
+                                $categoryLabels = ['Legal' => 'LEG', 'Contact' => 'CON', 'Reliability' => 'REL', 'SEO' => 'SEO', 'Accessibility' => 'ACC', 'Security' => 'SEC'];
                                 $scores = $showcase->categoryScores();
                                 $gradient = \App\Support\Certification::cardGradient($showcase->certification);
                             @endphp
@@ -378,7 +378,7 @@
         </div>
     </div>
 
-    <!-- Scanning Overlay (Simulating GitFut load presentation) -->
+    <!-- Scanning Overlay (Simulating load presentation) -->
     <div id="scan-overlay" class="hidden fixed inset-0 z-[300] flex flex-col items-center justify-center bg-bg">
         <!-- Radial Scanning Glow -->
         <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.18), transparent 55%), #020017;"></div>

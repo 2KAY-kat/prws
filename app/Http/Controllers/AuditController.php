@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Rule;
 use App\Models\Audit;
 use App\Models\Finding;
 use App\Services\RuleEngine;
@@ -13,14 +14,16 @@ class AuditController extends Controller
     public function create()
     {
         $tierOrder = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+        $currentRuleCount = Rule::where('active', true)->count();
 
         $showcaseCards = collect($tierOrder)
             ->map(fn ($tier) => Audit::with('findings')
                 ->where('certification', $tier)
+                ->where('rules_count', $currentRuleCount)
                 ->orderByDesc('score')
                 ->latest()
                 ->first())
-            ->filter()   // drop tiers with no scans yet
+            ->filter()
             ->values();
 
         $totalScans = Audit::count();
@@ -99,6 +102,7 @@ class AuditController extends Controller
             'url' => $url,
             'score' => $score,
             'certification' => $certification,
+            'rules_count' => count($results),
         ]);
 
         foreach ($results as $r) {

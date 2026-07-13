@@ -12,6 +12,7 @@ class RuleEngine
     protected string $baseUrl;
     protected ?string $homepageHtml = null;
     protected ?Crawler $crawler = null;
+    protected ?\Psr\Http\Message\ResponseInterface $homepageResponse = null;
 
     protected bool $reachable = true;
     protected ?string $fetchErrorMessage = null;
@@ -34,15 +35,22 @@ class RuleEngine
         return [];
     }
 
+    $rules = \App\Models\Rule::where('active', true)->get();
+
     $results = [];
-    foreach (config('prws_rules') as $rule) {
-        $method = 'check' . str_replace('-', '', $rule['rule_id']);
+    foreach ($rules as $rule) {
+        $method = 'check' . str_replace('-', '', $rule->rule_id);
         $passed = method_exists($this, $method) ? $this->$method() : false;
 
-        $results[] = array_merge($rule, [
+        $results[] = [
+            'rule_id' => $rule->rule_id,
+            'name' => $rule->name,
+            'category' => $rule->category,
+            'severity' => $rule->severity,
+            'points' => $rule->points,
             'passed' => $passed,
-            'points_earned' => $passed ? $rule['points'] : 0,
-        ]);
+            'points_earned' => $passed ? $rule->points : 0,
+        ];
     }
 
     return $results;
@@ -60,6 +68,7 @@ class RuleEngine
             return;
         }
 
+        $this->homepageResponse = $response;
         $this->homepageHtml = (string) $response->getBody();
         $this->crawler = new Crawler($this->homepageHtml);
     } catch (GuzzleException $e) {
@@ -250,5 +259,54 @@ class RuleEngine
         if (!$this->crawler) return false;
         $html = $this->crawler->filter('html');
         return $html->count() > 0 && trim($html->attr('lang') ?? '') !== '';
+    }
+
+    protected function hasHeader(string $name): bool
+    {
+        return $this->homepageResponse && $this->homepageResponse->hasHeader($name);
+    }
+
+    // --- LEG-003: Cookie Policy ---
+    protected function checkLEG003(): bool
+    {
+        return $this->pathExists('/cookies')
+            || $this->pathExists('/cookie-policy')
+            || $this->linkTextContains(['cookie']);
+    }
+
+    // --- CON-003: Organization Info / About page ---
+    protected function checkCON003(): bool
+    {
+        return $this->pathExists('/about') || $this->linkTextContains(['about']);
+    }
+
+    // --- SEC-001: HTTPS Enabled ---
+    protected function checkSEC001(): bool
+    {
+        return str_starts_with(strtolower($this->baseUrl), 'https://');
+    }
+
+    // --- SEC-002: HSTS ---
+    protected function checkSEC002(): bool
+    {
+        return $this->hasHeader('Strict-Transport-Security');
+    }
+
+    // --- SEC-004: X-Frame-Options ---
+    protected function checkSEC004(): bool
+    {
+        return $this->hasHeader('X-Frame-Options');
+    }
+
+    // --- SEC-005: X-Content-Type-Options ---
+    protected function checkSEC005(): bool
+    {
+        return $this->hasHeader('X-Content-Type-Options');
+    }
+
+    // --- SEC-006: Referrer-Policy ---
+    protected function checkSEC006(): bool
+    {
+        return $this->hasHeader('Referrer-Policy');
     }
 }

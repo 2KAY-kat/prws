@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Audit extends Model
 {
-    protected $fillable = ['url', 'score', 'certification'];
+    protected $fillable = ['url', 'score', 'certification', 'rules_count'];
     public function findings() { return $this->hasMany(Finding::class); }
 
     public function categoryScores(): array
