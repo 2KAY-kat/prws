@@ -153,7 +153,7 @@
     </div>
 
     <!-- Main Navigation / Headers -->
-    <header class="relative z-10">
+    <header class="relative z-20">
         <div class="absolute right-[clamp(20px,5vw,52px)] top-[clamp(16px,3vh,26px)]">
             <a href="https://github.com/2KAY-kat/prws" target="_blank" rel="noopener" aria-label="View PRWS on GitHub" class="group inline-flex items-center gap-[8px] rounded-full border border-line bg-bg-deep/55 py-[7px] pl-[13px] pr-[7px] text-[13px] font-semibold text-slate-400 backdrop-blur-md transition duration-200 hover:-translate-y-px hover:border-slate-500 hover:bg-bg-deep/80 hover:text-slate-100">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="shrink-0">
