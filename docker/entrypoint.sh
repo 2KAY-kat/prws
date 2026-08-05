@@ -13,4 +13,4 @@ fi
 
 php artisan config:cache
 
-exec php artisan serve --host=0.0.0.0 --port="${PORT:-8080}"
+exec php artisan octane:frankenphp --host=0.0.0.0 --port="${PORT:-8080}" --workers=4 --max-requests=500

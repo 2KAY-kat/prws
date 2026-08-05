@@ -1,4 +1,4 @@
-FROM php:8.3-cli
+FROM dunglas/frankenphp:1-php8.3
 
 RUN apt-get update && apt-get install -y \
         git curl unzip zip \
